@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	
+    <title>Game - 游戏空间 | F.Lovlie</title>
+    <style>
+        /* ========== 基础重置 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            color: #fff;
+            background: radial-gradient(ellipse at 50% 30%, #0a1a12 0%, #020805 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 噪点纹理覆盖 */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="1" stitchTiles="stitch"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.04"/></svg>');
+            pointer-events: none;
+            z-index: 100;
+            mix-blend-mode: overlay;
+        }
+
+        /* ========== 粒子画布 ========== */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ========== 导航栏 ========== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            background: rgba(10, 20, 15, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(80, 180, 120, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 50;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .nav-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 2px solid rgba(80, 200, 120, 0.6);
+            box-shadow: 0 0 20px rgba(40, 180, 80, 0.4);
+        }
+
+        .nav-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #a0ffc0, #60d090);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(80, 200, 120, 0.5);
+        }
+
+        /* ========== 返回按钮 ========== */
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            background: rgba(30, 60, 40, 0.7);
+            border: 1px solid rgba(80, 200, 120, 0.5);
+            border-radius: 25px;
+            color: #a0ffc0;
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(40, 180, 80, 0.3);
+        }
+
+        .back-btn:hover {
+            background: rgba(40, 80, 50, 0.9);
+            border-color: rgba(100, 220, 140, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 25px rgba(60, 200, 100, 0.5);
+        }
+
+        .back-btn::before {
+            content: '←';
+            font-size: 1.1rem;
+        }
+
+        /* ========== 主内容区域 ========== */
+        .main-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 100px 2rem 3rem;
+        }
+
+        /* ========== 页面标题 ========== */
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: 8px;
+            background: linear-gradient(180deg, #ffffff 0%, #a0ffc0 50%, #60d090 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 50px rgba(80, 200, 120, 0.6);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        /* ★★★ 页面标题头像图片 ★★★ */
+        .page-title img {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 2px solid rgba(80, 200, 120, 0.6);
+            box-shadow: 0 0 20px rgba(40, 180, 80, 0.4);
+        }
+
+        .page-subtitle {
+            font-size: 1.1rem;
+            color: rgba(160, 255, 192, 0.7);
+            letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(80, 200, 120, 0.4);
+        }
+
+        /* ========== 游戏卡片网格 ========== */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+            padding: 1rem;
+        }
+
+        /* ========== 游戏卡片 ========== */
+        .game-card {
+            position: relative;
+            background: rgba(15, 30, 20, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(80, 200, 120, 0.3);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: pointer;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: rgba(100, 220, 140, 0.7);
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.5),
+                0 0 40px rgba(60, 200, 100, 0.4);
+        }
+
+        /* 游戏封面图 */
+        .game-cover {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #1a3a25, #0a1a10);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .game-card:hover .game-cover img {
+            transform: scale(1.1);
+        }
+
+        /* 默认游戏图标 */
+        .game-icon-default {
+            font-size: 4rem;
+            color: rgba(80, 200, 120, 0.5);
+            text-shadow: 0 0 30px rgba(60, 180, 100, 0.6);
+        }
+
+        /* 游戏标签 */
+        .game-tag {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 0.3rem 0.8rem;
+            background: rgba(40, 180, 80, 0.9);
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(40, 180, 80, 0.6);
+        }
+
+        /* 游戏信息 */
+        .game-info {
+            padding: 1.5rem;
+        }
+
+        .game-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #a0ffc0;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 15px rgba(80, 200, 120, 0.5);
+        }
+
+        .game-desc {
+            font-size: 0.9rem;
+            color: rgba(200, 230, 210, 0.8);
+            line-height: 1.6;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        /* 游戏元信息 */
+        .game-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .game-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.8rem;
+            color: rgba(160, 200, 180, 0.7);
+        }
+
+        .game-meta-item::before {
+            content: '•';
+            color: #60d090;
+        }
+
+        /* 下载按钮 */
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.5rem;
+            background: linear-gradient(135deg, rgba(40, 180, 80, 0.8), rgba(30, 140, 60, 0.8));
+            border: none;
+            border-radius: 25px;
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 5px 20px rgba(40, 180, 80, 0.4);
+        }
+
+        .download-btn:hover {
+            background: linear-gradient(135deg, rgba(50, 200, 100, 0.9), rgba(40, 160, 70, 0.9));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(60, 200, 100, 0.6);
+        }
+
+        .download-btn::after {
+            content: '↓';
+            font-size: 1rem;
+        }
+
+        /* ========== 提示信息 ========== */
+        .notice-box {
+            background: rgba(30, 60, 40, 0.5);
+            border: 1px solid rgba(80, 200, 120, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .notice-box p {
+            color: rgba(180, 230, 200, 0.9);
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            line-height: 1.8;
+        }
+
+        .notice-box strong {
+            color: #a0ffc0;
+        }
+
+        /* ========== 页脚 ========== */
+        .footer {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 2rem;
+            color: rgba(160, 200, 180, 0.5);
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+        }
+
+        /* ========== 响应式设计 ========== */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 1rem;
+                height: 55px;
+            }
+
+            .nav-title {
+                font-size: 1rem;
+            }
+
+            .main-content {
+                padding: 80px 1rem 2rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+                letter-spacing: 4px;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .game-cover {
+                height: 150px;
+            }
+        }
+
+        /* ========== 动画 ========== */
+        @keyframes floatGentle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* ========== 卡片渐显动画 ========== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .game-card {
+            opacity: 0;
+            animation: fadeInUp 0.6s ease-out forwards, floatGentle 6s ease-in-out infinite;
+            animation-delay: 0s, 0.6s;
+        }
+
+        .game-card:nth-child(1) { animation-delay: 0.1s, 0.7s; }
+        .game-card:nth-child(2) { animation-delay: 0.25s, 0.85s; }
+        .game-card:nth-child(3) { animation-delay: 0.4s, 1s; }
+        .game-card:nth-child(4) { animation-delay: 0.55s, 1.15s; }
+        .game-card:nth-child(5) { animation-delay: 0.7s, 1.3s; }
+        .game-card:nth-child(6) { animation-delay: 0.85s, 1.45s; }
+
+        /* 开始游戏按钮 */
+        .start-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.5rem;
+            background: linear-gradient(135deg, rgba(0, 180, 255, 0.8), rgba(0, 120, 220, 0.8));
+            border: none;
+            border-radius: 25px;
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 5px 20px rgba(0, 150, 255, 0.4);
+        }
+
+        .start-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 200, 255, 0.9), rgba(0, 140, 240, 0.9));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 180, 255, 0.6);
+        }
+
+        .start-btn::after {
+            content: '▶';
+            font-size: 0.8rem;
+        }
+
+        /* 正在开发标签 */
+        .dev-tag {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 0.3rem 0.8rem;
+            background: rgba(180, 120, 0, 0.9);
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(200, 150, 0, 0.6);
+        }
+
+        /* 正在开发遮罩 */
+        .game-card.dev-mode {
+            cursor: not-allowed;
+            filter: brightness(0.5) saturate(0.3);
+            pointer-events: none;
+        }
+
+        .game-card.dev-mode:hover {
+            transform: none;
+            border-color: rgba(80, 200, 120, 0.3);
+            box-shadow: none;
+        }
+
+        .dev-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.5rem;
+            background: rgba(80, 80, 80, 0.6);
+            border: 1px dashed rgba(180, 150, 0, 0.5);
+            border-radius: 25px;
+            color: rgba(200, 180, 100, 0.8);
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+
+        .dev-badge::before {
+            content: '🔧';
+        }
+
+        /* ========== 提示弹窗 ========== */
+        .toast-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .toast-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .toast-box {
+            background: rgba(15, 30, 20, 0.95);
+            border: 1px solid rgba(80, 200, 120, 0.5);
+            border-radius: 20px;
+            padding: 2rem 2.5rem;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(40, 180, 80, 0.4), 0 20px 60px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .toast-modal.active .toast-box {
+            transform: scale(1) translateY(0);
+        }
+        .toast-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .toast-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #a0ffc0;
+            margin-bottom: 0.8rem;
+            letter-spacing: 2px;
+        }
+        .toast-message {
+            font-size: 1rem;
+            color: rgba(160, 255, 192, 0.8);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        .toast-close {
+            padding: 0.6rem 1.5rem;
+            background: linear-gradient(135deg, rgba(40, 180, 80, 0.8), rgba(30, 140, 60, 0.8));
+            border: none;
+            border-radius: 25px;
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .toast-close:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(40, 180, 80, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- 粒子背景 -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-logo-container">
+            <!-- ★★★ 左上角头像：修改 src="shilaimu.jpg" 为你自己的图片路径 ★★★ -->
+            <img class="nav-logo" src="shilaimu.jpg" alt="Logo" onerror="this.style.display='none';">
+            <span class="nav-title">GAME</span>
+        </div>
+        <!-- ===== 返回按钮 - 链接到MyWeb.html ===== -->
+        <a href="index.html" class="back-btn">返回主页</a>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <!-- 页面标题 -->
+        <header class="page-header">
+            <h1 class="page-title">
+                <!-- ★★★ 标题头像：修改 src="shilaimu.jpg" 为你自己的图片路径 ★★★ -->
+                <img src="shilaimu.jpg" alt="头像" onerror="this.style.display='none';">
+                游戏空间
+            </h1>
+            <p class="page-subtitle">自制单机小游戏，无需联网即可畅玩</p>
+        </header>
+
+        <!-- 提示信息 -->
+        <div class="notice-box">
+            <p>所有游戏均为<strong>单机版本</strong>，打开即可运行，<strong>无需联网</strong>！<br>
+            点击「下载或者开始游戏」按钮即可玩上我的游戏。</p>
+        </div>
+
+        <!-- 游戏卡片网格 -->
+        <div class="games-grid">
+            <!-- ===== 游戏卡片 1 ===== -->
+            <!-- 复制此卡片模板添加更多游戏 -->
+            <!-- 修改 data-zip 为你的游戏压缩包路径 -->
+            <div class="game-card" onclick="window.location.href='tanchishe.html'">
+                <div class="game-cover">
+                    <img src="game-covers/snake.png" alt="贪吃蛇大作战" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'game-icon-default\'>snake</span>';">
+                    <span class="game-tag">休闲</span>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">贪吃蛇大作战</h3>
+                    <p class="game-desc">这是我梦开始的地方，之前需要自己敲了一周的贪吃蛇，现在AI可以一键生成，并且比我做的好多了</p>
+                    <div class="game-meta">
+                        <span class="game-meta-item">单机游戏</span>
+                        <span class="game-meta-item">无需下载</span>
+                        <span class="game-meta-item">全平台</span>
+                    </div>
+                    <button class="start-btn">开始游戏</button>
+                </div>
+            </div>
+
+            <!-- ===== 游戏卡片 2 - 坦克迷宫（点击显示提示） ===== -->
+            <div class="game-card" onclick="showComingSoonToast()">
+                <div class="game-cover">
+                    <img src="game-covers/tank-maze.png" alt="坦克迷宫" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'game-icon-default\'>tank</span>';">
+                    <span class="game-tag">策略</span>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">坦克迷宫</h3>
+                    <p class="game-desc">驾驶坦克穿越随机生成的迷宫，寻找出口逃离！途中需要躲避陷阱、消灭敌方坦克，收集弹药和补给。每次挑战都是全新地图！</p>
+                    <div class="game-meta">
+                        <span class="game-meta-item">单机游戏</span>
+                        <span class="game-meta-item">约12MB</span>
+                        <span class="game-meta-item">Windows</span>
+                    </div>
+                    <button class="download-btn">下载游戏</button>
+                </div>
+            </div>
+
+            <!-- ===== 游戏卡片 3 - 正在开发 ===== -->
+            <div class="game-card dev-mode">
+                <div class="game-cover">
+                    <img src="game-covers/breakout.png" alt="打砖块" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'game-icon-default\'>*</span>';">
+                    <span class="dev-tag">开发中</span>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">***</h3>
+                    <p class="game-desc">******************</p>
+                    <div class="game-meta">
+                        <span class="game-meta-item">****</span>
+                        <span class="game-meta-item">****</span>
+                        <span class="game-meta-item">*****</span>
+                    </div>
+                    <span class="dev-badge">正在开发</span>
+                </div>
+            </div>
+
+            <!-- ===== 游戏卡片 4 - 正在开发 ===== -->
+            <div class="game-card dev-mode">
+                <div class="game-cover">
+                    <img src="game-covers/memory.png" alt="记忆翻牌" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'game-icon-default\'>*</span>';">
+                    <span class="dev-tag">开发中</span>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">****</h3>
+                    <p class="game-desc">******************</p>
+                    <div class="game-meta">
+                        <span class="game-meta-item">****</span>
+                        <span class="game-meta-item">****</span>
+                        <span class="game-meta-item">****</span>
+                    </div>
+                    <span class="dev-badge">正在开发</span>
+                </div>
+            </div>
+
+            <!-- ===== 游戏卡片 5 - 正在开发 ===== -->
+            <div class="game-card dev-mode">
+                <div class="game-cover">
+                    <img src="game-covers/shooter.png" alt="太空射击" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'game-icon-default\'>*</span>';">
+                    <span class="dev-tag">开发中</span>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">****</h3>
+                    <p class="game-desc">******************</p>
+                    <div class="game-meta">
+                        <span class="game-meta-item">****</span>
+                        <span class="game-meta-item">****</span>
+                        <span class="game-meta-item">****</span>
+                    </div>
+                    <span class="dev-badge">正在开发</span>
+                </div>
+            </div>
+
+            <!-- ===== 游戏卡片 6 - 正在开发 ===== -->
+            <div class="game-card dev-mode">
+                <div class="game-cover">
+                    <img src="game-covers/maze.png" alt="迷宫探险" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'game-icon-default\'>*</span>';">
+                    <span class="dev-tag">开发中</span>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">****</h3>
+                    <p class="game-desc">******************</p>
+                    <div class="game-meta">
+                        <span class="game-meta-item">****</span>
+                        <span class="game-meta-item">****</span>
+                        <span class="game-meta-item">****</span>
+                    </div>
+                    <span class="dev-badge">正在开发</span>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <p>© 2026 F.Lovlie | 所有游戏仅供学习交流使用</p>
+    </footer>
+
+    <!-- ===== 提示弹窗 ===== -->
+    <div class="toast-modal" id="toastModal" onclick="closeToast(event)">
+        <div class="toast-box" onclick="event.stopPropagation()">
+            <div class="toast-icon">🎮</div>
+            <div class="toast-title">敬请期待</div>
+            <div class="toast-message">快完成了，请再等等</div>
+            <button class="toast-close" onclick="closeToast()">知道了</button>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // ========== 粒子背景动画 ==========
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initParticles();
+        }
+
+        function initParticles() {
+            particles = [];
+            const w = canvas.width;
+            const h = canvas.height;
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    radius: Math.random() * 2.5 + 0.5,
+                    speedX: (Math.random() - 0.5) * 0.4,
+                    speedY: (Math.random() - 0.5) * 0.4 - 0.2,
+                    color: `rgba(${60 + Math.floor(Math.random()*40)}, ${180 + Math.floor(Math.random()*60)}, ${120 + Math.floor(Math.random()*80)}, ${Math.random()*0.5 + 0.3})`
+                });
+            }
+        }
+
+        function drawParticles() {
+            const w = canvas.width;
+            const h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+            for (let p of particles) {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = 'rgba(80, 200, 160, 0.7)';
+                ctx.shadowBlur = 12;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                p.x += p.speedX;
+                p.y += p.speedY;
+                if (p.x < -10) p.x = w + 10;
+                if (p.x > w + 10) p.x = -10;
+                if (p.y < -10) p.y = h + 10;
+                if (p.y > h + 10) p.y = -10;
+            }
+            requestAnimationFrame(drawParticles);
+        }
+
+        resizeCanvas();
+        drawParticles();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ========== 提示弹窗功能 ==========
+        const toastModal = document.getElementById('toastModal');
+        
+        function showComingSoonToast() {
+            toastModal.classList.add('active');
+        }
+        
+        function closeToast(e) {
+            // 如果点击的是弹窗背景或关闭按钮，则关闭
+            if (!e || e.target === toastModal || e.target.tagName === 'BUTTON') {
+                toastModal.classList.remove('active');
+            }
+        }
+
+        // ========== 游戏下载功能 ==========
+        /**
+         * 下载游戏压缩包
+         * @param {string} zipFile - 压缩包文件名（放在 games 文件夹中）
+         * @param {string} gameName - 游戏名称（用于提示）
+         */
+        function downloadGame(zipFile, gameName) {
+            // ===== 修改这里的路径 =====
+            // 游戏压缩包默认放在 games 文件夹中
+            // 例如：games/game1.zip
+            const gamesFolder = 'games/'; // <-- 【修改游戏文件夹路径】
+            const downloadUrl = gamesFolder + zipFile;
+            
+            // 创建下载链接
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = zipFile;
+            
+            // 触发下载
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // 提示信息
+            alert(`🎮 开始下载「${gameName}」！\n\n下载完成后请解压压缩包，运行里面的可执行文件即可开始游戏。`);
+        }
+    </script>
+</body>
+</html>

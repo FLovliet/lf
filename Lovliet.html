@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Lovliet · 个人简历</title>
+    <style>
+        :root {
+            --bg-deep: #020208;
+            --card-bg: rgba(12, 18, 35, 0.85);
+            --accent: #6aa8ff;
+            --accent2: #a0d4ff;
+            --gold: #e0c080;
+            --text-primary: #e8f0ff;
+            --text-secondary: #b0c8e8;
+            --border-glow: rgba(100, 160, 255, 0.5);
+            --shadow-glow: 0 0 30px rgba(60, 130, 240, 0.45);
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+            color: var(--text-primary);
+            background: var(--bg-deep);
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            user-select: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="1" stitchTiles="stitch"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.04"/></svg>');
+            pointer-events: none;
+            z-index: 999;
+            mix-blend-mode: overlay;
+        }
+
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* ===== 头部区域 ===== */
+        .header-section {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 2rem;
+            padding: 2.5rem 2rem;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-glow), 0 8px 40px rgba(0, 0, 0, 0.5);
+            animation: fadeSlideIn 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+        }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .avatar-wrapper {
+            flex-shrink: 0;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a2a4a, #0d1528);
+            border: 3px solid rgba(130, 190, 255, 0.8);
+            box-shadow: 0 0 50px rgba(60, 140, 255, 0.55), 0 0 100px rgba(40, 100, 220, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: avatarPulse 4s ease-in-out infinite;
+        }
+        @keyframes avatarPulse {
+            0%, 100% { box-shadow: 0 0 50px rgba(60, 140, 255, 0.55), 0 0 100px rgba(40, 100, 220, 0.35); }
+            50% { box-shadow: 0 0 70px rgba(100, 180, 255, 0.8), 0 0 140px rgba(60, 140, 255, 0.55); }
+        }
+        .avatar-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+        }
+        .avatar-wrapper .avatar-fallback {
+            font-size: 3.5rem;
+            filter: drop-shadow(0 0 20px rgba(180, 220, 255, 0.7));
+            animation: floatEmoji 3s ease-in-out infinite;
+        }
+        @keyframes floatEmoji {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .header-info {
+            flex: 1;
+            min-width: 220px;
+        }
+        .header-name {
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            background: linear-gradient(180deg, #ffffff 0%, #b8d4ff 60%, #80b0ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 30px rgba(140, 190, 255, 0.8));
+            margin-bottom: 0.3rem;
+        }
+        .header-title {
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            color: #a0c8f0;
+            text-shadow: 0 0 15px rgba(100, 160, 240, 0.6);
+            margin-bottom: 0.8rem;
+        }
+        .header-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+        }
+        .tag {
+            display: inline-block;
+            padding: 0.35rem 1rem;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            border-radius: 20px;
+            background: rgba(60, 120, 200, 0.2);
+            border: 1px solid rgba(100, 160, 240, 0.5);
+            color: #c0d8ff;
+            text-shadow: 0 0 8px rgba(80, 150, 240, 0.6);
+            box-shadow: 0 0 12px rgba(50, 120, 220, 0.25);
+            transition: all 0.3s;
+        }
+        .tag:hover {
+            background: rgba(80, 150, 240, 0.35);
+            border-color: rgba(150, 210, 255, 0.8);
+            box-shadow: 0 0 22px rgba(80, 160, 255, 0.5);
+        }
+
+        /* ===== 通用卡片 ===== */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-lg);
+            padding: 1.8rem 2rem;
+            box-shadow: var(--shadow-glow), 0 6px 30px rgba(0, 0, 0, 0.4);
+            animation: fadeSlideIn 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        .card:nth-child(2) { animation-delay: 0.15s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.45s; }
+        .card:nth-child(5) { animation-delay: 0.6s; }
+        .card:nth-child(6) { animation-delay: 0.75s; }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            letter-spacing: 3px;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            color: #d0e4ff;
+            text-shadow: 0 0 20px rgba(100, 170, 255, 0.7);
+        }
+        .card-title .icon {
+            font-size: 1.5rem;
+            filter: drop-shadow(0 0 10px rgba(140, 200, 255, 0.8));
+        }
+        .card-divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(100, 160, 240, 0.5), transparent);
+            margin-bottom: 1.2rem;
+        }
+
+        /* 关于我 */
+        .about-text {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.9;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 6px rgba(80, 140, 220, 0.3);
+        }
+        .about-text strong {
+            color: #e0f0ff;
+            text-shadow: 0 0 12px rgba(120, 190, 255, 0.6);
+            font-weight: 600;
+        }
+
+        /* 技能条 */
+        .skill-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .skill-label {
+            width: 100px;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            color: #c0d8f8;
+            text-shadow: 0 0 8px rgba(80, 150, 240, 0.5);
+            flex-shrink: 0;
+        }
+        .skill-bar-bg {
+            flex: 1;
+            min-width: 150px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.4);
+        }
+        .skill-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #3a7bd5, #6ab0ff, #a0d4ff);
+            box-shadow: 0 0 20px rgba(60, 140, 255, 0.7), 0 0 40px rgba(40, 100, 220, 0.4);
+            transition: width 1.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+            position: relative;
+        }
+        .skill-bar-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 16px rgba(180, 220, 255, 1);
+        }
+        .skill-percent {
+            font-size: 0.85rem;
+            color: #b0d4ff;
+            text-shadow: 0 0 10px rgba(100, 170, 255, 0.6);
+            min-width: 40px;
+            text-align: right;
+        }
+
+        /* 时间线 */
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+            margin-bottom: 1.5rem;
+            border-left: 2px solid rgba(100, 160, 240, 0.4);
+            transition: border-color 0.3s;
+        }
+        .timeline-item:hover {
+            border-left-color: rgba(160, 210, 255, 0.9);
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -7px;
+            top: 4px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4a90e2;
+            box-shadow: 0 0 20px rgba(80, 160, 255, 0.8);
+            transition: all 0.3s;
+        }
+        .timeline-item:hover::before {
+            background: #80c0ff;
+            box-shadow: 0 0 30px rgba(120, 200, 255, 1);
+            transform: scale(1.3);
+        }
+        .timeline-date {
+            font-size: 0.8rem;
+            letter-spacing: 1.5px;
+            color: #90b8e0;
+            text-shadow: 0 0 8px rgba(70, 140, 230, 0.5);
+            margin-bottom: 0.25rem;
+        }
+        .timeline-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #e0f0ff;
+            text-shadow: 0 0 10px rgba(100, 180, 255, 0.5);
+        }
+        .timeline-desc {
+            font-size: 0.9rem;
+            color: #a0c0e0;
+            text-shadow: 0 0 4px rgba(60, 120, 200, 0.3);
+        }
+
+        /* ===== 联系卡片 ===== */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 1rem;
+            border-radius: var(--radius-sm);
+            background: rgba(40, 60, 100, 0.2);
+            border: 1px solid rgba(80, 140, 220, 0.3);
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+        }
+        .contact-item:hover {
+            background: rgba(60, 100, 180, 0.35);
+            border-color: rgba(130, 190, 255, 0.7);
+            box-shadow: 0 0 25px rgba(60, 140, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        /* ===== 联系卡片图标 ===== */
+        .contact-icon {
+            /* 图标大小：宽高一致，保持正方形 */
+            width: 32px;
+            height: 32px;
+            font-size: 1.6rem;  /* 如果使用字体图标，此值生效 */
+            object-fit: contain;  /* 图片保持比例 */
+            border-radius: 6px;  /* 轻微圆角 */
+            filter: drop-shadow(0 0 10px rgba(140, 200, 255, 0.7));
+        }
+        .contact-text {
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            color: #c8dcff;
+        }
+
+        /* ===== 模态框 ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-box {
+            background: linear-gradient(145deg, rgba(12, 18, 35, 0.95), rgba(18, 30, 58, 0.98));
+            border: 1px solid rgba(100, 160, 240, 0.6);
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(60, 130, 240, 0.5), 0 20px 60px rgba(0, 0, 0, 0.6);
+            transform: scale(0.3) rotateX(10deg);
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+        .modal-overlay.active .modal-box {
+            transform: scale(1) rotateX(0deg);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 18px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid rgba(100, 160, 240, 0.4);
+            background: rgba(30, 50, 80, 0.5);
+            color: #a0c8f0;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            background: rgba(220, 80, 80, 0.4);
+            border-color: rgba(255, 100, 100, 0.6);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(255, 80, 80, 0.3);
+        }
+
+        .modal-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 20px rgba(140, 200, 255, 0.7));
+            animation: modalIconFloat 2s ease-in-out infinite;
+        }
+        @keyframes modalIconFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-10px) scale(1.05); }
+        }
+
+        .modal-label {
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #7aa8d8;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 10px rgba(100, 160, 240, 0.4);
+        }
+        .modal-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #e8f4ff;
+            margin-bottom: 1.2rem;
+            text-shadow: 0 0 20px rgba(140, 190, 255, 0.6);
+            word-break: break-all;
+        }
+        .modal-desc {
+            font-size: 0.9rem;
+            color: #90b8e0;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        .modal-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 2rem;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #2a5ab0, #3a7bd5);
+            border: 1px solid rgba(100, 160, 240, 0.6);
+            color: #e8f4ff;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            box-shadow: 0 0 25px rgba(50, 120, 220, 0.3);
+        }
+        .modal-action:hover {
+            background: linear-gradient(135deg, #3a6ab0, #4a8be5);
+            box-shadow: 0 0 40px rgba(80, 160, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .modal-copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 0.8rem;
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            background: rgba(40, 60, 100, 0.4);
+            border: 1px solid rgba(80, 140, 220, 0.3);
+            color: #a0c8f0;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .modal-copy-btn:hover {
+            background: rgba(60, 100, 160, 0.5);
+            border-color: rgba(120, 180, 240, 0.6);
+        }
+        .modal-copy-btn.copied {
+            background: rgba(40, 140, 80, 0.4);
+            border-color: rgba(80, 200, 120, 0.6);
+            color: #a0f0c0;
+        }
+
+        /* 返回按钮 */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.6rem;
+            border-radius: 30px;
+            background: rgba(30, 50, 80, 0.6);
+            border: 1px solid rgba(100, 160, 240, 0.5);
+            color: #c0d8ff;
+            font-size: 0.95rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            width: fit-content;
+            box-shadow: 0 0 20px rgba(40, 100, 200, 0.3);
+            z-index: 10;
+            position: relative;
+        }
+        .back-btn:hover {
+            background: rgba(50, 90, 160, 0.5);
+            border-color: rgba(150, 210, 255, 0.8);
+            box-shadow: 0 0 35px rgba(80, 160, 255, 0.6);
+            color: #fff;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .header-section {
+                flex-direction: column;
+                text-align: center;
+                padding: 1.8rem 1.2rem;
+            }
+            .header-name { font-size: 2.2rem; }
+            .header-tags { justify-content: center; }
+            .card { padding: 1.4rem 1.2rem; }
+            .skill-label { width: 80px; font-size: 0.8rem; }
+            .avatar-wrapper { width: 90px; height: 90px; }
+            .modal-box { padding: 2.2rem 1.5rem; }
+            .modal-value { font-size: 1.2rem; }
+            .modal-icon { font-size: 2.8rem; }
+        }
+        @media (max-width: 480px) {
+            .header-name { font-size: 1.8rem; letter-spacing: 1.5px; }
+            .card-title { font-size: 1.1rem; letter-spacing: 1.5px; }
+            .contact-grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+            .contact-text { font-size: 0.75rem; }
+            .contact-icon { font-size: 1.3rem; }
+            .modal-box { max-width: 95%; padding: 2rem 1.2rem; }
+        }
+    </style>
+
+</head>
+<body>
+    <canvas id="particles-canvas"></canvas>
+
+    <div class="main-container">
+        <!-- 返回按钮 -->
+       <a class="back-btn" href="index.html" title="返回上一页">
+    <span>←</span> 返回
+</a>
+        <!-- 头部个人信息 -->
+        <header class="header-section">
+            <div class="avatar-wrapper">
+                <!-- ✅ 头像图片，路径 shilaimu.jpg -->
+                <img src="shilaimu.jpg" alt="F.Lovliet 头像" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <span class="avatar-fallback" style="display:none;">🦋</span>
+            </div>
+            <div class="header-info">
+                <h1 class="header-name">F.Lovliet</h1>
+                <p class="header-title">✦ Unity游戏开发者 · 数字创作者 · 剪辑者 ✦</p>
+                <div class="header-tags">
+                    <span class="tag">Unity游戏开发</span>
+                    <span class="tag">算法</span>
+                    <span class="tag">AI编程</span>
+                    <span class="tag">剪辑</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 关于我 -->
+        <section class="card">
+            <h2 class="card-title">关于我</h2>
+            <div class="card-divider"></div>
+            <p class="about-text">
+                你好，很高兴遇见你，我是 <strong>F.Lovliet</strong>，<strong>林锋</strong>，一名热衷于<strong>小游戏</strong>的开发者。在这个AI盛行的时代，是否还能有我的一席之地？
+                我相信代码不仅仅是逻辑的堆砌，更是<strong>情感与美学</strong>的表达。
+                我有很多的想法，却没有很强的执行力。我没有赚大钱的能力，没有出众的颜值，更没有某些勇气...
+            </p>
+        </section>
+
+        <!-- 技能 -->
+        <section class="card">
+            <h2 class="card-title">专业技能</h2>
+            <div class="card-divider"></div>
+            <div class="skill-item">
+                <span class="skill-label">C#</span>
+                <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 0%;" data-width="90%"></div></div>
+                <span class="skill-percent">90%</span>
+            </div>
+            <div class="skill-item">
+                <span class="skill-label">C/C++</span>
+                <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 0%;" data-width="80%"></div></div>
+                <span class="skill-percent">80%</span>
+            </div>
+            <div class="skill-item">
+                <span class="skill-label">Python</span>
+                <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 0%;" data-width="70%"></div></div>
+                <span class="skill-percent">70%</span>
+            </div>
+            <div class="skill-item">
+                <span class="skill-label">Unity</span>
+                <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 0%;" data-width="99%"></div></div>
+                <span class="skill-percent">99%</span>
+            </div>
+			<div class="skill-item">
+                <span class="skill-label">算法</span>
+                <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 0%;" data-width="77%"></div></div>
+                <span class="skill-percent">77%</span>
+            </div>
+            <div class="skill-item">
+                <span class="skill-label">Ps</span>
+                <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 0%;" data-width="82%"></div></div>
+                <span class="skill-percent">82%</span>
+            </div>
+            <div class="skill-item">
+                <span class="skill-label">Ae</span>
+                <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 0%;" data-width="70%"></div></div>
+                <span class="skill-percent">70%</span>
+            </div>
+          <div class="skill-item">
+                <span class="skill-label">Pr</span>
+                <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 0%;" data-width="50%"></div></div>
+                <span class="skill-percent">50%</span>
+            </div>
+			<div class="skill-item">
+                <span class="skill-label">剪映</span>
+                <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 0%;" data-width="85%"></div></div>
+                <span class="skill-percent">85%</span>
+            </div>
+        </section>
+
+        <!-- 经历 -->
+        <section class="card">
+            <h2 class="card-title">工作经历</h2>
+            <div class="card-divider"></div>
+            <div class="timeline-item">
+                <div class="timeline-date">2026年4月-至今</div>
+                <div class="timeline-title">剪辑师|运营账号·犀牛管家家政服务公司</div>
+                <div class="timeline-desc">负责公司的视频拍摄和剪辑，抖音和小红书的账号运营</div>
+            </div>
+        </section>
+
+        <!-- 教育 -->
+        <section class="card">
+            <h2 class="card-title">教育背景</h2>
+            <div class="card-divider"></div>
+            <div class="timeline-item">
+                <div class="timeline-date">2024 — 至今</div>
+                <div class="timeline-title">数字媒体技术 · 本科</div>
+                <div class="timeline-desc">主修课程：数据结构、算法设计、Unity游戏开发、计算机图形学。</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-date">自主学习</div>
+                <div class="timeline-title">在线课程</div>
+                <div class="timeline-desc">完成多项进阶课程，关注AI，Unity等领域。</div>
+            </div>
+        </section>
+
+        <!-- 项目作品 -->
+        <section class="card">
+            <h2 class="card-title">项目精选</h2>
+            <div class="card-divider"></div>
+            <div class="timeline-item">
+                <div class="timeline-title">个人网页</div>
+                <div class="timeline-desc">一个融合粒子特效、蝴蝶动画与翻转交互的双页品牌展示页面。</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-title">控制台贪吃蛇</div>
+                <div class="timeline-desc">起初我要一点一点手敲，现在却可以靠AI一键生成</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-title">坦克迷宫</div>
+                <div class="timeline-desc">当然这并不是我原创的，这是我做游戏的开始</div>
+            </div>
+        </section>
+
+        <!-- ===== 联系方式 ===== -->
+        <section class="card">
+            <h2 class="card-title">联系我</h2>
+            <div class="card-divider"></div>
+            <div class="contact-grid">
+                <!-- ★★★ Gmail：修改 src="gmail.png" 为你的图片路径 ★★★ -->
+                <div class="contact-item" style="cursor: pointer;"data-type="email"
+                 data-label="电子邮件"
+                   data-value="dfeng7311@gmail.com"
+                   data-desc="发送邮件给我，我会在24小时内回复。">
+                    <img class="contact-icon" src="gmail.png" alt="Gmail">
+                    <span class="contact-text">Gmail</span>
+                </div>
+ 
+                <!-- ★★★ Instagram：修改 src="ins.png" 为你的图片路径 ★★★ -->
+                <div class="contact-item" style="cursor: pointer;"data-type="instagram"
+                   data-label="Instagram"
+                   data-value="f.lovliet"
+                   data-desc="关注我的摄影与生活分享。">
+                    <img class="contact-icon" src="ins.png" alt="Instagram">
+                    <span class="contact-text">Instagram</span>
+                </div>
+                <!-- ★★★ Twitter：修改 src="logo.png" 为你的图片路径 ★★★ -->
+                <div class="contact-item" style="cursor: pointer;"data-type="twitter"
+                   data-label="Tiktok"
+                   data-value="f_lovliet"
+                   data-desc="只用来刷，什么评论都不会发表">
+                    <img class="contact-icon" src="tiktok.png" alt="Twitter">
+                    <span class="contact-text">TikTok</span>
+                </div>
+                <!-- ★★★ 个人网站：修改 src="logo.png" 为你的图片路径 ★★★ -->
+                <div class="contact-item" style="cursor: pointer;"data-type="website"
+                   data-label="个人网站"
+                   data-value="lovliet.dev"
+                   data-desc="我的个人作品集与技术博客。">
+                    <img class="contact-icon" src="shilaimu.jpg" alt="网站">
+                    <span class="contact-text">个人网站</span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 模态框 -->
+    <div class="modal-overlay" id="contactModal">
+        <div class="modal-box">
+            <button class="modal-close" id="modalClose" title="关闭">✕</button>
+            <div class="modal-icon" id="modalIcon"></div>
+            <div class="modal-label" id="modalLabel"></div>
+            <div class="modal-value" id="modalValue"></div>
+            <div class="modal-desc" id="modalDesc"></div>
+            <br>
+            <button class="modal-copy-btn" id="modalCopyBtn" onclick="copyContactValue()">
+                📋 复制
+            </button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ========== 粒子背景 ==========
+            const canvas = document.getElementById('particles-canvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let animationId;
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                initParticles();
+            }
+
+            function initParticles() {
+                particles = [];
+                const w = canvas.width;
+                const h = canvas.height;
+                const count = Math.min(Math.floor((w * h) / 8000), 180);
+                for (let i = 0; i < count; i++) {
+                    particles.push({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        radius: Math.random() * 2 + 0.5,
+                        speedX: (Math.random() - 0.5) * 0.35,
+                        speedY: (Math.random() - 0.5) * 0.35,
+                        color: `rgba(${70 + Math.floor(Math.random()*40)}, ${140 + Math.floor(Math.random()*50)}, ${220 + Math.floor(Math.random()*35)}, ${Math.random()*0.5 + 0.25})`
+                    });
+                }
+            }
+
+            function drawParticles() {
+                if (!canvas || !ctx) return;
+                const w = canvas.width;
+                const h = canvas.height;
+                ctx.clearRect(0, 0, w, h);
+                for (let p of particles) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.shadowColor = 'rgba(90, 160, 240, 0.7)';
+                    ctx.shadowBlur = 10;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                    if (p.x < -20) p.x = w + 20;
+                    if (p.x > w + 20) p.x = -20;
+                    if (p.y < -20) p.y = h + 20;
+                    if (p.y > h + 20) p.y = -20;
+                }
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 100) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = `rgba(80, 150, 230, ${0.08 * (1 - dist / 100)})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                animationId = requestAnimationFrame(drawParticles);
+            }
+
+            resizeCanvas();
+            drawParticles();
+
+            // ========== 技能条动画 ==========
+            const skillBars = document.querySelectorAll('.skill-bar-fill');
+            const observerOptions = {
+                threshold: 0.3,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const bar = entry.target;
+                        const targetWidth = bar.getAttribute('data-width');
+                        if (targetWidth) {
+                            bar.style.width = targetWidth;
+                        }
+                        observer.unobserve(bar);
+                    }
+                });
+            }, observerOptions);
+
+            skillBars.forEach(bar => {
+                observer.observe(bar);
+            });
+
+            // ========== 窗口大小调整 ==========
+            window.addEventListener('resize', () => {
+                if (animationId) cancelAnimationFrame(animationId);
+                resizeCanvas();
+                drawParticles();
+            });
+
+            // ========== 卡片悬停微光 ==========
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.boxShadow =
+                        '0 0 50px rgba(80, 160, 255, 0.6), 0 0 100px rgba(50, 120, 230, 0.35), 0 6px 30px rgba(0,0,0,0.4)';
+                    card.style.borderColor = 'rgba(140, 200, 255, 0.7)';
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.boxShadow =
+                        '0 0 30px rgba(60, 130, 240, 0.45), 0 6px 30px rgba(0,0,0,0.4)';
+                    card.style.borderColor = 'rgba(100, 160, 255, 0.5)';
+                });
+            });
+
+            // ========== 联系方式模态框 ==========
+            const modal = document.getElementById('contactModal');
+            const modalClose = document.getElementById('modalClose');
+            const modalIcon = document.getElementById('modalIcon');
+            const modalLabel = document.getElementById('modalLabel');
+            const modalValue = document.getElementById('modalValue');
+            const modalDesc = document.getElementById('modalDesc');
+                        const copyBtn = document.getElementById('modalCopyBtn');
+
+            let currentContactValue = '';
+
+            document.querySelectorAll('.contact-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentContactValue = this.getAttribute('data-value');
+                    modalIcon.textContent = this.getAttribute('data-icon');
+                    modalLabel.textContent = this.getAttribute('data-label');
+                    modalValue.textContent = this.getAttribute('data-value');
+                    modalDesc.textContent = this.getAttribute('data-desc');
+                                                            
+                    
+                    // 重置复制按钮
+                    copyBtn.classList.remove('copied');
+                    copyBtn.innerHTML = '📋 复制';
+
+                    modal.classList.add('active');
+                });
+            });
+
+            function closeModal() {
+                modal.classList.remove('active');
+            }
+
+            modalClose.addEventListener('click', closeModal);
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) closeModal();
+            });
+
+            // ESC 关闭
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+
+            // 全局复制函数
+            window.copyContactValue = function() {
+                if (!currentContactValue) return;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(currentContactValue).then(() => {
+                        showCopied();
+                    }).catch(() => {
+                        fallbackCopy();
+                    });
+                } else {
+                    fallbackCopy();
+                }
+            };
+
+            function fallbackCopy() {
+                const textarea = document.createElement('textarea');
+                textarea.value = currentContactValue;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try { document.execCommand('copy'); showCopied(); } catch(e) {}
+                document.body.removeChild(textarea);
+            }
+
+            function showCopied() {
+                copyBtn.classList.add('copied');
+                copyBtn.innerHTML = '✅ 已复制!';
+                setTimeout(() => {
+                    copyBtn.classList.remove('copied');
+                    copyBtn.innerHTML = '📋 复制';
+                }, 2000);
+            }
+
+        })();
+    </script>
+</body>
+</html>
