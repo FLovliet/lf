@@ -1323,7 +1323,6 @@
             -webkit-backdrop-filter: blur(20px);
             border: 2px solid rgba(130, 180, 240, 0.8);
 
-
             border-radius: 20px;
             padding: 2.5rem 2rem;
             max-width: 520px;
@@ -1769,48 +1768,9 @@
                 border-left-width: 6px;
             }
         }
-
-        /* 全局加载遮罩 */
-        #globalLoader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #020205;
-            z-index: 99999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-        }
-        .loader-spin {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(100, 160, 255, 0.2);
-            border-top: 3px solid #80b0ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .loader-text {
-            color: #c0d8ff;
-            font-size: 14px;
-            letter-spacing: 1px;
-        }
     </style>
 </head>
 <body>
-    <!-- 全局加载遮罩 -->
-    <div id="globalLoader">
-        <div class="loader-spin"></div>
-        <div class="loader-text">图片加载中，请稍候...</div>
-    </div>
-
     <div class="page-wrapper" id="pageWrapper">
         <section class="page" id="page1">
             <canvas id="particles-canvas"></canvas>
@@ -1987,7 +1947,7 @@
     <div class="mobile-tip-overlay" id="mobileTipOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
         <div style="background:#1a1e2f; border:1px solid #5a7cff; border-radius:12px; padding:30px 25px; text-align:center; color:#d0dcff; max-width:320px;">
             <h3 style="margin-top:0; font-size:1.3rem;">✨建议电脑端或大屏浏览</h3>
-            <p style="font-size:0.9rem; line-height:1.6; margin:15px 0 20px;">检测到你可能是在小窗口或是手机观看，本页面为<strong style="color:red;">电脑端</strong>效果优化，手机或小窗口下布局不太完美呢，交互体验不佳呢～</p>
+            <p style="font-size:0.9rem; line-height:1.6; margin:15px 0 20px;">检测到你可能是在小窗口或是手机观看，本页面为<strong style="color:red;">电脑端</strong>效果，手机或小窗口下布局不太完美呢~<strong style="color:red;">页面完全加载出来会有一点点慢，请等一下下</strong></p>
             <button id="closeMobileTip" style="background:#3a5fcd; border:none; color:white; padding:10px 28px; border-radius:20px; font-size:1rem; cursor:pointer;">知道了,废话真多,继续浏览</button>
         </div>
     </div>
@@ -2003,24 +1963,17 @@
 
     <script>
         (function() {
-            // 关闭加载遮罩
-            function closeLoader() {
-                const loader = document.getElementById('globalLoader');
-                if(loader) {
-                    loader.style.opacity = '0';
-                    setTimeout(() => {
-                        loader.style.display = 'none';
-                    }, 500);
-                }
+            // ------ 首次访问弹窗提示 (替代原有的图片加载遮罩) ------
+            const HAS_VISITED_KEY = 'lovliet_has_visited';
+            if (!localStorage.getItem(HAS_VISITED_KEY)) {
+                // 页面内容开始渲染后稍作延迟弹出，确保背景已显示
+                window.addEventListener('load', function() {
+                    setTimeout(function() {
+                        alert('因为服务器原因，页面完全加载出来会有一点点慢，请等一下下！');
+                        localStorage.setItem(HAS_VISITED_KEY, 'true');
+                    }, 300);
+                });
             }
-
-            // 页面完全加载后关闭
-            window.addEventListener('load', () => {
-                setTimeout(closeLoader, 800);
-            });
-
-            // 最多等待5秒强制关闭
-            setTimeout(closeLoader, 5000);
 
             const wrapper = document.getElementById('pageWrapper');
             let pageHeight = window.innerHeight;
@@ -2336,6 +2289,7 @@
                 setTimeout(() => { likeButton.style.transform = ''; }, 150);
             });
 
+            // ------ 音乐控制 (默认关闭，移除播放失败弹窗) ------
             const bgMusic = document.getElementById('bgMusic');
             const musicToggle = document.getElementById('musicToggle');
             const MUSIC_STATE_KEY = 'musicPlayingState';
@@ -2343,21 +2297,29 @@
             
             function initMusicState() {
                 let savedMusicState = localStorage.getItem(MUSIC_STATE_KEY);
-                musicPlaying = savedMusicState === 'true';
-                musicToggle.textContent = musicPlaying ? '🎵' : '🔇';
-                if (musicPlaying && bgMusic.paused) {
+                // 默认关闭：如果没有保存状态或保存为false，则保持关闭
+                if (savedMusicState === 'true') {
+                    musicPlaying = true;
+                    musicToggle.textContent = '🎵';
                     bgMusic.play().catch(() => {
+                        // 播放失败则静默重置为关闭状态
                         musicPlaying = false;
                         musicToggle.textContent = '🔇';
                         localStorage.setItem(MUSIC_STATE_KEY, 'false');
                     });
+                } else {
+                    musicPlaying = false;
+                    musicToggle.textContent = '🔇';
+                    localStorage.setItem(MUSIC_STATE_KEY, 'false');
                 }
             }
             
             initMusicState();
             
             window.addEventListener('pageshow', (event) => {
-                if (event.persisted) initMusicState();
+                if (event.persisted) {
+                    initMusicState();
+                }
             });
             
             musicToggle.addEventListener('click', () => {
@@ -2365,16 +2327,19 @@
                     bgMusic.pause();
                     musicToggle.textContent = '🔇';
                     localStorage.setItem(MUSIC_STATE_KEY, 'false');
+                    musicPlaying = false;
                 } else {
                     bgMusic.play().then(() => {
                         musicToggle.textContent = '🎵';
                         localStorage.setItem(MUSIC_STATE_KEY, 'true');
+                        musicPlaying = true;
                     }).catch(() => {
+                        // 播放被阻止时，静默保持关闭状态，不弹出任何提示
+                        musicPlaying = false;
                         musicToggle.textContent = '🔇';
-                        alert('音乐播放被浏览器阻止，请点击页面任意位置后再试。');
+                        localStorage.setItem(MUSIC_STATE_KEY, 'false');
                     });
                 }
-                musicPlaying = !musicPlaying;
             });
             
             bgMusic.addEventListener('play', () => {
@@ -2389,6 +2354,7 @@
                 localStorage.setItem(MUSIC_STATE_KEY, 'false');
             });
 
+            // ------ 弹窗相关逻辑 ------
             const modalOverlay = document.getElementById('modalOverlay');
             const modalIcon = document.getElementById('modalIcon');
             const modalTitle = document.getElementById('modalTitle');
